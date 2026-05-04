@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Revenue Administration System for Excise Department of Sri Lanka" />
+    <title>RASED — Revenue Administration System | Excise Department of Sri Lanka</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Import Map: Shared singleton dependencies for all MFEs -->
+    <script type="importmap">
+      {
+        "imports": {
+          "single-spa": "https://cdn.jsdelivr.net/npm/single-spa@6.0.3/lib/es2015/esm/single-spa.min.js",
+          "react": "https://esm.sh/react@18.3.1",
+          "react-dom": "https://esm.sh/react-dom@18.3.1",
+          "react-dom/client": "https://esm.sh/react-dom@18.3.1/client",
+          "react/jsx-runtime": "https://esm.sh/react@18.3.1/jsx-runtime",
+          "react/jsx-dev-runtime": "https://esm.sh/react@18.3.1/jsx-dev-runtime",
+          "react-router-dom": "https://esm.sh/react-router-dom@6.23.0",
+          "@ras/mfe-user-management": "http://localhost:4001/src/main.tsx",
+          "@ras/mfe-license-management": "http://localhost:4002/src/main.tsx",
+          "@ras/mfe-production-management": "http://localhost:4003/src/main.tsx",
+          "@ras/mfe-reporting-management": "http://localhost:4004/src/main.tsx"
+        }
+      }
+    </script>
+
+    <!-- Import Map Overrides for local development -->
+    <script src="https://cdn.jsdelivr.net/npm/import-map-overrides@3.1.1/dist/import-map-overrides.js"></script>
+  </head>
+  <body class="m-0 p-0 bg-gray-50">
+    <div id="root"></div>
+    <import-map-overrides-full show-when-local-storage="devtools"></import-map-overrides-full>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
