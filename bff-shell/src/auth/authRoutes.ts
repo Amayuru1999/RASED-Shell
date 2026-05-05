@@ -3,7 +3,6 @@ import { Issuer, generators, Client } from 'openid-client';
 
 let oidcClient: Client;
 
-// ─── Initialize OIDC Client (called on server startup) ────────────────────────
 export async function initOidcClient(): Promise<void> {
   const keycloakUrl = process.env.KEYCLOAK_URL || 'http://localhost:8080';
   const realm = process.env.KEYCLOAK_REALM || 'mites-users';
@@ -19,7 +18,6 @@ export async function initOidcClient(): Promise<void> {
   });
 }
 
-// ─── Extract Roles from JWT Payload ───────────────────────────────────────────
 function extractRoles(accessToken: string, clientId: string): string[] {
   try {
     const payload = JSON.parse(
@@ -31,7 +29,6 @@ function extractRoles(accessToken: string, clientId: string): string[] {
       (r) => !r.startsWith('default-roles') && !r.startsWith('uma_') && !r.startsWith('offline_')
     );
   } catch (err) {
-    // Structured error — never swallow silently
     console.error(JSON.stringify({
       level: 'ERROR',
       msg: 'Failed to extract roles from JWT',
@@ -49,14 +46,11 @@ function determinePrimaryRole(roles: string[]): string {
   return 'AUDITOR';
 }
 
-// ─── Auth Router ──────────────────────────────────────────────────────────────
+
 export function createAuthRouter(): Router {
   const router = Router();
 
-  /**
-   * GET /api/auth/login
-   * Initiates OIDC Authorization Code Flow → redirects to Keycloak
-   */
+
   router.get('/login', (req: Request, res: Response) => {
     const nonce = generators.nonce();
     const state = generators.state();
@@ -76,11 +70,7 @@ export function createAuthRouter(): Router {
     res.redirect(authUrl);
   });
 
-  /**
-   * GET /api/auth/callback
-   * Keycloak redirects here after successful login.
-   * Exchanges code for tokens, stores in session, issues cookie.
-   */
+
   router.get('/callback', async (req: Request, res: Response) => {
     try {
       const bffUrl = process.env.BFF_BASE_URL || 'http://localhost:8081';
@@ -92,7 +82,6 @@ export function createAuthRouter(): Router {
         state: req.session.state,
       });
 
-      // ── Store tokens ONLY in server-side session (never exposed to browser) ─
       req.session.tokens = {
         access_token: tokenSet.access_token!,
         id_token: tokenSet.id_token,
@@ -113,7 +102,6 @@ export function createAuthRouter(): Router {
         primaryRole: determinePrimaryRole(roles),
       };
 
-      // Clean up OIDC transient state from session
       delete req.session.nonce;
       delete req.session.state;
 
