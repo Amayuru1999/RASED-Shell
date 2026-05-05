@@ -122,17 +122,12 @@ export function createAuthRouter(): Router {
     }
   });
 
-  /**
-   * GET /api/auth/me
-   * Returns sanitized user profile — NO tokens exposed.
-   * Includes expiresAt so the frontend can schedule silent refresh.
-   */
+
   router.get('/me', (req: Request, res: Response) => {
     if (!req.session.user || !req.session.tokens) {
       return res.status(401).json({ authenticated: false });
     }
 
-    // Check token expiry (with a small buffer to give client time to refresh)
     const expiresAt = req.session.tokens.expires_at;
     if (expiresAt && Date.now() / 1000 > expiresAt - 10) {
       req.log?.warn('/me: token expired or near-expiry, returning 401', { expiresAt });
@@ -145,7 +140,6 @@ export function createAuthRouter(): Router {
     return res.json({
       authenticated: true,
       user: req.session.user,
-      /** Exposed so frontend can schedule silent refresh (no token value exposed) */
       expiresAt,
     });
   });
@@ -171,7 +165,6 @@ export function createAuthRouter(): Router {
         expires_at: tokenSet.expires_at,
       };
 
-      // Re-extract roles in case they changed during the session
       const clientId = process.env.KEYCLOAK_CLIENT_ID || 'ras-bff';
       const roles = extractRoles(tokenSet.access_token!, clientId);
       if (req.session.user) {
@@ -196,11 +189,6 @@ export function createAuthRouter(): Router {
     }
   });
 
-  /**
-   * GET /api/auth/logout
-   * 1. Destroys local session + clears cookie
-   * 2. Redirects to Keycloak end-session endpoint
-   */
   router.get('/logout', (req: Request, res: Response) => {
     const idToken = req.session.tokens?.id_token;
     const shellUrl = process.env.SHELL_URL || 'http://localhost:9000';
@@ -213,14 +201,12 @@ export function createAuthRouter(): Router {
         req.log?.info('User logged out — session destroyed', { userId });
       }
 
-      // Clear the session cookie immediately
       res.clearCookie('ras.sid', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
       });
 
-      // Redirect to Keycloak end-session if we have the id_token_hint
       if (idToken && oidcClient.issuer.metadata.end_session_endpoint) {
         const logoutUrl = oidcClient.endSessionUrl({
           id_token_hint: idToken,
